@@ -1,0 +1,54 @@
+[x] login: получаешь email, password, декодируешь password, если все это есть
+в бд, то отправляешь токен типу
+[x] создать новую бд под задачи id(предмета)-title(Buy dildo)-description
+[] реализовать post /todos Пользователь отправляет title, desc и токен в
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9, verify_token, 
+если хуйня,   "message": "Unauthorized", если норм
+{
+  "id": 1,
+  "title": "Buy groceries",
+  "description": "Buy milk, eggs, and bread"
+}
+
+
+
+
+
+
+
+
+
+
+# Нужно что то, что примет name, email, password
+# проверит их на валидность(ifами или pydantic)
+# Преобразует пароль в хеш - how to hash password python
+# запишет это все в бд вида id - name - email - hash password, если валидация пройдена
+# и вернет токен(JWT)(в нем будет хранится id с бд) - Пользователь использует этот токен для дальнейших запросов, отправляя его в заголовке, чтобы сервер знал, кто делает запрос
+
+Упаковывается
+payload = {
+        "user_id": user_id,  # ID пользователя, который будет закодирован в токен
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    }
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+
+
+Отправляется юзером в заголовке
+{
+  "title": "Buy groceries",
+  "description": "Buy milk, eggs, and bread"
+}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 # Это вот токен
+
+
+Распаковывается
+verify_token(Сюда вставляется токен из заголовка)
+Если норм все - исполняем запрос
+Если не норм - отклоняем
+
+verify_token():
+    если токен збс, то дать айди
+    если неверный: ошибка
+    если истек: ошибка, отправить перлогиниться челика
+
+
