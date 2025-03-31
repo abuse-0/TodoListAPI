@@ -1,4 +1,4 @@
-# uvicorn main:app --reload
+# uvicorn main:app --reload пофиг
 # http://127.0.0.1:8000/docs
 # http://127.0.0.1:8000
 
@@ -258,7 +258,7 @@ async def get_todo(token: Annotated[str, Header()], page: int = Query(alias="pag
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run("main:app", host="localhost", port=8000, log_level="info")
 
 
 
