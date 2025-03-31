@@ -15,6 +15,9 @@ from typing import Annotated
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import update, delete
+
+
 # подключение
 #postgresql://имя:пароль@хост/имя бд, логи
 engine = create_engine('postgresql://postgres:1234@localhost/postgres')#, echo=True)
@@ -36,6 +39,7 @@ class ToDoList(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(100))
     description = Column(String(500))
+    user_id = Column(Integer)
 
 
 # Сам проверяет, есть ли таблица
@@ -88,6 +92,19 @@ def create_token(id: int, email: str) -> str:
 
     return jwt.encode(payload, secret_key, algorithm='HS256')
 
+
+# А как собственно время то проверять... как вот так отправить "message": "Unauthorized"
+# Как адекватно исключения не все, а определенное ловить
+def verify_token(token: str) -> int | None:
+    secret_key = "secret_key"
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=['HS256'])
+        print(payload)
+        return payload['user_id']
+    except:
+        return None
+
+
 # Вернет токен с айди
 @app.post("/register")
 def register(user: UserRegister) -> dict[str, str]:
@@ -119,13 +136,66 @@ def login(user: UserLogin) -> dict[str, str]:
     return {"token": token}
 
 
-# 
 @app.post("/todos")
+# Если я тут напишу -> ditc[str, str] все сломается
 def todo(todo: ToDo, token: Annotated[str, Header()]):
     title = todo.title
     description = todo.description
-    print(token)
 
+    flag = verify_token(token) # id/None
+
+    # Подход не из лучших конечно с title=title
+    if flag:
+        new_todo = ToDoList(title=title, description=description, user_id=flag)
+        session.add(new_todo)
+        session.commit()
+        todo_id = session.query(ToDoList).filter_by(title=title).first().id
+
+        return {
+            "id": todo_id,
+            "title": title,
+            "description": description,
+            "user_id": flag
+        }
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+@app.put("/todos/{todo_id}")
+async def update_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()]):
+    title = todo.title
+    description = todo.description
+
+    flag = verify_token(token)
+
+    user_id = session.query(ToDoList).filter_by(id=todo_id).first().user_id
+
+    if flag == user_id:
+        stmt = (
+            update(ToDoList)
+            # Тут вместо and юзается запятая
+            .where(ToDoList.user_id == flag, ToDoList.id == todo_id)
+            .values(title=title, description=description)
+        )
+
+        session.execute(stmt)
+        session.commit()
+    
+        return {
+            "id": todo_id,
+            "title": title,
+            "description": description
+        }
+    else:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+@app.delete("/todos/{todo_id}", status_code=204)
+async def delete_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()]):
+    flag = verify_token(token)
+
+    if flag:
+        stmt = delete(ToDoList).where(ToDoList.id == todo_id)
+        session.execute(stmt)
+        session.commit()
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info")

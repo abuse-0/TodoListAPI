@@ -1,7 +1,7 @@
 [x] login: получаешь email, password, декодируешь password, если все это есть
 в бд, то отправляешь токен типу
 [x] создать новую бд под задачи id(предмета)-title(Buy dildo)-description
-[] реализовать post /todos Пользователь отправляет title, desc и токен в
+[x] реализовать post /todos Пользователь отправляет title, desc и токен в
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9, verify_token, 
 если хуйня,   "message": "Unauthorized", если норм
 {
@@ -10,9 +10,65 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9, verify_token,
   "description": "Buy milk, eggs, and bread"
 }
 
+[x] обновить по айди todo отсюда PUT /todos/1
+титл и дескрипшн тут передаются
+{
+  "title": "Buy groceries",
+  "description": "Buy milk, eggs, bread, and cheese"
+}
 
+Также убедитесь, что у пользователя есть разрешение на обновление элемента 
+todo, т. е. пользователь является создателем элемента todo, который он 
+обновляет, получается мне надо сравнивать id из токена с user_id, который
+я щас добавлю в таблицу to_do_list   id | title  |  description | user_id,
+записывать user_id можно так же по токену собственно
 
+Ответьте с ошибкой и кодом статуса, 403если пользователь не авторизован 
+для обновления элемента.
+{
+  "message": "Forbidden"
+}
 
+После успешного обновления элемента списка дел отправьте ответ с 
+обновленными данными элемента.
+{
+  "id": 1,
+  "title": "Buy groceries",
+  "description": "Buy milk, eggs, bread, and cheese"
+}
+
+[x]Удалить элемент To-Do
+Удалите существующий элемент списка дел, используя следующий запрос:
+
+DELETE /todos/1
+Пользователь должен быть аутентифицирован и авторизован для удаления 
+элемента to-do. После успешного удаления ответьте кодом статуса 204.
+
+[]Получить элементы To-Do
+Получите список задач с помощью следующего запроса:
+
+GET /todos?page=1&limit=10
+Пользователь должен быть аутентифицирован для доступа к задачам, 
+а ответ должен быть разбит на страницы. Ответьте списком дел вместе с 
+подробностями разбиения на страницы.
+
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Buy groceries",
+      "description": "Buy milk, eggs, bread"
+    },
+    {
+      "id": 2,
+      "title": "Pay bills",
+      "description": "Pay electricity and water bills"
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "total": 2
+}
 
 
 
