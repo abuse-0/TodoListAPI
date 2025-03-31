@@ -160,6 +160,7 @@ def todo(todo: ToDo, token: Annotated[str, Header()]):
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+
 @app.put("/todos/{todo_id}")
 async def update_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()]):
     title = todo.title
@@ -188,6 +189,7 @@ async def update_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()])
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
     
+    
 @app.delete("/todos/{todo_id}", status_code=204)
 async def delete_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()]):
     flag = verify_token(token)
@@ -204,7 +206,6 @@ async def get_todo(token: Annotated[str, Header()], page: int = Query(alias="pag
 
     if flag:
         # Я должен написать эквивалент SELECT * FROM to_do_list
-        # Затем циклов while n == limit or len(to_do_list) == 0(тоже в переменной хранить), len_list = len(to_do_list), len_list -= 1
         # Добавлять это в словарь , вида 
 
         """
@@ -246,7 +247,7 @@ async def get_todo(token: Annotated[str, Header()], page: int = Query(alias="pag
             "title": todo.title,
             "description": todo.description
             }
-            
+
             print(todo)
             result["data"].append(todo)
             limit -= 1
