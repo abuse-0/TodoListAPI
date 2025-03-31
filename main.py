@@ -7,7 +7,7 @@ import hashlib
 import jwt
 import datetime
 
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Query
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import create_engine
 from typing import Annotated
@@ -197,10 +197,67 @@ async def delete_todo(todo_id: int, todo: ToDo, token: Annotated[str, Header()])
         session.execute(stmt)
         session.commit()
 
+# GET /todos?page=1&limit=10
+@app.get("/todos")
+async def get_todo(token: Annotated[str, Header()], page: int = Query(alias="page"), limit: int = Query(alias="limit")):
+    flag = verify_token(token)
+
+    if flag:
+        # Я должен написать эквивалент SELECT * FROM to_do_list
+        # Затем циклов while n == limit or len(to_do_list) == 0(тоже в переменной хранить), len_list = len(to_do_list), len_list -= 1
+        # Добавлять это в словарь , вида 
+
+        """
+        {
+          "data": [
+            {
+              "id": 1,
+              "title": "Buy groceries",
+              "description": "Buy milk, eggs, bread"
+            },
+            {
+              "id": 2,
+              "title": "Pay bills",
+              "description": "Pay electricity and water bills"
+            }
+          ],
+          "page": 1,
+          "limit": 10,
+          "total": 2
+        }                
+        """
+        todos = session.query(ToDoList).all()
+        total = 0
+
+        result = {
+          "data": [
+          ],
+          "page": 1,
+          "limit": limit,
+          "total": total 
+        }  
+
+        for todo in todos:
+            if limit == 0:
+                break
+
+            todo = {
+            "id": todo.id,
+            "title": todo.title,
+            "description": todo.description
+            }
+            
+            print(todo)
+            result["data"].append(todo)
+            limit -= 1
+            result['total'] += 1
+
+        return result
+
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="info")
-
-
 
 
 
